@@ -15,10 +15,10 @@ RIGHT_SIDE_INDEX = 270
 RIGHT_FRONT_INDEX = 210
 LEFT_FRONT_INDEX=150
 LEFT_SIDE_INDEX=90
-MAX_SPEED = 3
+MAX_SPEED = 0.3
 
 DESIRED_DISTANCE = 1
-TEST_NAME = "1_meter_sim"
+TEST_NAME = "1_meter_sim.txt"
 
 class RandomWalk(Node):
 
@@ -44,8 +44,9 @@ class RandomWalk(Node):
         self.pose_saved = ''
         self.cmd = Twist()
         self.timer = self.create_timer(0.5, self.timer_callback)
-
-        self.odom_log_file = open('{TEST_NAME}.txt', 'w')
+        self.x_val = 0
+        self.y_val = 0
+        self.z_val = 0
 
     def listener_callback1(self, msg1):
         scan = msg1.ranges
@@ -65,8 +66,7 @@ class RandomWalk(Node):
         (qx, qy, qz, qw) = (orientation.x, orientation.y, orientation.z, orientation.w)
         self.get_logger().info('self position: {},{},{}'.format(posx, posy, posz))
         self.pose_saved = position
-
-        self.odom_log_file.write(f"Position: x={posx}, y={posy}, z={posz}, Orientation: qx={qx}, qy={qy}, qz={qz}, qw={qw}\n")
+        self.x_val = posx
 
     def timer_callback(self):
         if len(self.scan_cleaned) == 0:
@@ -83,31 +83,31 @@ class RandomWalk(Node):
             self.get_logger().info('Stopping')
             return
         else:
-            distance = self.pose_saved.x
+            distance = self.x_val
             if distance < DESIRED_DISTANCE:
                 if distance < DESIRED_DISTANCE - STOP_DISTANCE:
-                    speed = MAX_SPEED
+                    self.cmd.linear.x = 0.3                   
+                    self.cmd.linear.z = 0.0
+                    self.publisher_.publish(self.cmd)
                 else:
-                    speed = max(0.5, MAX_SPEED * (distance - DESIRED_DISTANCE) / STOP_DISTANCE)
-                    self.set_speed(speed)
+                    speed = max(0.05, MAX_SPEED * (distance - DESIRED_DISTANCE) / STOP_DISTANCE)
+                    self.cmd.linear.x = speed
+                    self.cmd.linear.z = 0.0
+                    self.publisher_.publish(self.cmd)
             else:
-                self.set_speed(0)
-
-    def set_speed(self, speed):
-        self.cmd.linear.x = speed
-        self.cmd.angular.z = 0.0
-        self.publisher_.publish(self.cmd)
-
-    def destroy_node(self):
-        # Close the log file when the node is destroyed
-        self.odom_log_file.close()
-        super().destroy_node()
+                self.cmd.linear.x = 0.0                  
+                self.cmd.linear.z = 0.0
+                self.publisher_.publish(self.cmd)
 
 def main(args=None):
+    # initialize the ROS communication
     rclpy.init(args=args)
+    # declare the node constructor
     random_walk_node = RandomWalk()
-    rclpy.spin(random_walk_node)
-    random_walk_node.destroy_node()
+    try:
+        rclpy.spin(random_walk_node)
+    except KeyboardInterrupt:
+        random_walk_node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
