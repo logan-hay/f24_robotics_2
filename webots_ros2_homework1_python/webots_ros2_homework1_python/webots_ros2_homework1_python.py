@@ -61,7 +61,7 @@ class RandomWalk(Node):
     def listener_callback2(self, msg2):
         position = msg2.pose.pose.position
         orientation = msg2.pose.pose.orientation
-        (posx, posy, posz) = (position.x, position.y, position.z)
+        (posx, posy, posz) = (math.fabs(position.x), position.y, position.z)
         
         if not self.ready:
             self.start = posx
