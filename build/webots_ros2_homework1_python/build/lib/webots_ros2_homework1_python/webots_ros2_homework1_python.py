@@ -44,7 +44,6 @@ class RandomWalk(Node):
         self.pose_saved = ''
         self.cmd = Twist()
         self.timer = self.create_timer(0.5, self.timer_callback)
-        self.odom_log_file = open(TEST_NAME, 'w')
         self.x_val = 0
         self.y_val = 0
         self.z_val = 0
@@ -67,9 +66,7 @@ class RandomWalk(Node):
         (qx, qy, qz, qw) = (orientation.x, orientation.y, orientation.z, orientation.w)
         self.get_logger().info('self position: {},{},{}'.format(posx, posy, posz))
         self.pose_saved = position
-
         self.x_val = posx
-        self.odom_log_file.write(f"Position: x={posx}, y={posy}, z={posz}, Orientation: qx={qx}, qy={qy}, qz={qz}, qw={qw}\n")
 
     def timer_callback(self):
         if len(self.scan_cleaned) == 0:
