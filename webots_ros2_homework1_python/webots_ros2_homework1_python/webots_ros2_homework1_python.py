@@ -15,7 +15,7 @@ RIGHT_SIDE_INDEX = 270
 RIGHT_FRONT_INDEX = 210
 LEFT_FRONT_INDEX=150
 LEFT_SIDE_INDEX=90
-MAX_SPEED = 0.3
+MAX_SPEED = 0.2
 
 DESIRED_DISTANCE = 1
 
@@ -44,8 +44,6 @@ class RandomWalk(Node):
         self.cmd = Twist()
         self.timer = self.create_timer(0.5, self.timer_callback)
         self.x_val = 0
-        self.y_val = 0
-        self.z_val = 0
 
     def listener_callback1(self, msg1):
         scan = msg1.ranges
@@ -62,6 +60,7 @@ class RandomWalk(Node):
         position = msg2.pose.pose.position
         orientation = msg2.pose.pose.orientation
         (posx, posy, posz) = (position.x, position.y, position.z)
+        posx = abs(posx)
         (qx, qy, qz, qw) = (orientation.x, orientation.y, orientation.z, orientation.w)
         self.get_logger().info('self position: {},{},{}'.format(posx, posy, posz))
         self.pose_saved = position

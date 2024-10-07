@@ -18,7 +18,6 @@ LEFT_SIDE_INDEX=90
 MAX_SPEED = 0.3
 
 DESIRED_DISTANCE = 1
-TEST_NAME = "1_meter_sim.txt"
 
 class RandomWalk(Node):
 
@@ -68,36 +67,20 @@ class RandomWalk(Node):
         self.pose_saved = position
         self.x_val = posx
 
-    def timer_callback(self):
-        if len(self.scan_cleaned) == 0:
-            self.turtlebot_moving = False
-            return
-        
-        front_lidar_min = min(self.scan_cleaned[LEFT_FRONT_INDEX:RIGHT_FRONT_INDEX])
-
-        if front_lidar_min < SAFE_STOP_DISTANCE:
-            self.cmd.linear.x = 0.0 
-            self.cmd.angular.z = 0.0 
-            self.publisher_.publish(self.cmd)
-            self.turtlebot_moving = False
-            self.get_logger().info('Stopping')
-            return
-        else:
-            distance = self.x_val
-            if distance < DESIRED_DISTANCE:
-                if distance < DESIRED_DISTANCE - STOP_DISTANCE:
-                    self.cmd.linear.x = 0.3                   
-                    self.cmd.linear.z = 0.0
-                    self.publisher_.publish(self.cmd)
-                else:
-                    speed = max(0.05, MAX_SPEED * (distance - DESIRED_DISTANCE) / STOP_DISTANCE)
-                    self.cmd.linear.x = speed
-                    self.cmd.linear.z = 0.0
-                    self.publisher_.publish(self.cmd)
-            else:
-                self.cmd.linear.x = 0.0                  
+    def timer_callback(self):        
+        distance = self.x_val
+        if distance < DESIRED_DISTANCE:
+            if distance < DESIRED_DISTANCE - STOP_DISTANCE:
+                self.cmd.linear.x = 0.3                   
                 self.cmd.linear.z = 0.0
-                self.publisher_.publish(self.cmd)
+            else:
+                speed = max(0.05, MAX_SPEED * (distance - DESIRED_DISTANCE) / STOP_DISTANCE)
+                self.cmd.linear.x = speed
+                self.cmd.linear.z = 0.0
+        else:
+            self.cmd.linear.x = 0.0             
+            self.cmd.linear.z = 0.0
+        self.publisher_.publish(self.cmd)
 
 def main(args=None):
     # initialize the ROS communication
